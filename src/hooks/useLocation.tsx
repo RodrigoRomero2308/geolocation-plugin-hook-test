@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Geolocation, Position } from "@capacitor/geolocation";
 import { isPlatform } from "@ionic/core";
+import { log } from "../utils/logging";
 
 export const useCurrentLocation = (timeBetweenLocations: number) => {
   const [currentLocation, setCurrentLocation] = useState<Position | null>(null);
@@ -27,8 +28,8 @@ export const useCurrentLocation = (timeBetweenLocations: number) => {
     if (!currentWatchId.current) {
       currentWatchId.current = watchId;
     } else if (currentWatchId.current !== watchId) {
-      console.log("useCurrentLocation: there is already a watch id in state");
-      console.log(currentWatchId.current);
+      log("useCurrentLocation: there is already a watch id in state");
+      log(currentWatchId.current);
       await Geolocation.clearWatch({
         id: watchId,
       });
@@ -36,11 +37,11 @@ export const useCurrentLocation = (timeBetweenLocations: number) => {
   }, [timeBetweenLocations]);
 
   const start = useCallback(async () => {
-    console.log("useCurrentLocation: Starting");
+    log("useCurrentLocation: Starting");
     /* Chequeamos permisos */
     const permissionStatus = await Geolocation.checkPermissions();
     if (permissionStatus.location === "granted") {
-      console.log("useCurrentLocation: Permissions granted");
+      log("useCurrentLocation: Permissions granted");
       const handle = actuallyStart();
       return handle;
     } else if (isPlatform("capacitor")) {
@@ -49,22 +50,22 @@ export const useCurrentLocation = (timeBetweenLocations: number) => {
         permissions: ["location"],
       });
       if (newPermissionStatus.location === "granted") {
-        console.log("useCurrentLocation: Permissions granted after prompt");
+        log("useCurrentLocation: Permissions granted after prompt");
         const handle = actuallyStart();
         return handle;
       }
     }
-    console.log("useCurrentLocation: Dont have location permission granted");
+    log("useCurrentLocation: Dont have location permission granted");
     return 0;
   }, [actuallyStart]);
 
   const init = useCallback(() => {
-    console.log("useCurrentLocation: Initializing");
+    log("useCurrentLocation: Initializing");
     start();
   }, [start]);
 
   const cleanBeforeUnmount = useCallback(() => {
-    console.log("useCurrentLocation: Cleaning before unmounting");
+    log("useCurrentLocation: Cleaning before unmounting");
     stop();
   }, [stop]);
 
